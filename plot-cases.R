@@ -63,7 +63,7 @@ cases_au_fit <- cases_au %>%
   mutate(day = day + 1) %>%
   mutate(x = log(day)) %>%
   mutate(y = log(cum_cases)) %>%
-  filter(x > 3.5)
+  filter(x > 3.6)
 
 lm_eqn <- function(df){
   m <- lm(y ~ x, df);
@@ -75,7 +75,6 @@ lm_eqn <- function(df){
 }
 
 cases_au_fit %>%
-  mutate(pred = preds) %>%
   ggplot(aes(x = x, y = y)) +
   geom_point() +
   geom_smooth(method = 'lm', formula = y ~ x) +
@@ -101,6 +100,7 @@ cases_au_fit %>%
   ggplot(aes(x = date, y = cum_cases)) +
   geom_point() +
   geom_line(data = cases_au_extrap,
-            aes(x = date, y = pred_cum_cases), colour = 'blue')
+            aes(x = date, y = pred_cum_cases), colour = 'blue') +
+  theme_fivethirtyeight()
 
 
