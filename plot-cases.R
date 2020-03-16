@@ -47,8 +47,6 @@ cases <- cases_au %>%
   mutate(day = day - 25) %>%
   bind_rows(cases_it)
 
-
-
 cases %>%
   ggplot(aes(x = day, y = cum_cases, colour = country)) +
   geom_point() +
@@ -66,11 +64,6 @@ cases_au_fit <- cases_au %>%
   mutate(x = log(day)) %>%
   mutate(y = log(cum_cases)) %>%
   filter(x > 3.5)
-
-
-
-
-
 
 lm_eqn <- function(df){
   m <- lm(y ~ x, df);
@@ -91,13 +84,6 @@ cases_au_fit %>%
 
 
 fit <- lm(y ~ x, data = cases_au_fit)
-preds <- predict(fit)
-coef(fit)[1]
-coef(fit)[2]
-
-
-
-
 
 date_range <- seq(from = min(cases_au_fit$date),
                   to = ymd('2020-04-01'),
