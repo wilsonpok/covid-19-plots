@@ -1,32 +1,33 @@
 library(tidyverse)
 library(lubridate)
 library(ggthemes)
+library(magrittr)
 
 
-'~/covid-19-plots/data/cases-aus.csv' %>%
-read_csv(col_names = c('date', 'cum_cases'),
+cases_au <- '~/covid-19-plots/data/cases-aus.csv' %>%
+  read_csv(col_names = c('date', 'cum_cases'),
                      col_types = cols(
                        date = col_date(format = '%d/%m/%Y'),
                        cum_cases = col_integer())) %>%
   mutate(day = (date - min(date)) %>% as.integer()) %>%
-  mutate(country = 'AU') ->
-  cases_au
+  mutate(country = 'AU')
 
 
-'~/covid-19-plots/data/cases-itl.csv' %>%
+
+cases_it <- '~/covid-19-plots/data/cases-itl.csv' %>%
   read_csv(col_names = c('date', 'cum_cases'),
            col_types = cols(
              date = col_date(format = '%Y-%m-%d'),
              cum_cases = col_integer())) %>%
   mutate(day = (date - min(date)) %>% as.integer()) %>%
-  mutate(country = 'IT') ->
-  cases_it
+  mutate(country = 'IT')
+
 
 
 
 
 cases_au %>%
-  ggplot(aes(x = day, y = cum_cases)) +
+  ggplot(aes(x = date, y = cum_cases)) +
   geom_point() +
   geom_line() +
   theme_fivethirtyeight()
@@ -62,8 +63,11 @@ cases %>%
 cases_au_fit <- cases_au %>%
   mutate(day = day + 1) %>%
   mutate(x = log(day)) %>%
-  mutate(y = log(cum_cases)) %>%
-  filter(x > 3.6)
+  mutate(y = log(cum_cases))
+
+cases_au_fit %>% ggplot(aes(x = x, y = y)) + geom_point()
+
+cases_au_fit %<>% filter(x > 3.6)
 
 lm_eqn <- function(df){
   m <- lm(y ~ x, df);
@@ -102,5 +106,3 @@ cases_au_fit %>%
   geom_line(data = cases_au_extrap,
             aes(x = date, y = pred_cum_cases), colour = 'blue') +
   theme_fivethirtyeight()
-
-
