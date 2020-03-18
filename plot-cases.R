@@ -4,6 +4,10 @@ library(ggthemes)
 library(magrittr)
 
 
+###############
+# Load data
+###############
+
 cases_au <- '~/covid-19-plots/data/cases-aus.csv' %>%
   read_csv(col_names = c('date', 'cum_cases'),
                      col_types = cols(
@@ -11,8 +15,6 @@ cases_au <- '~/covid-19-plots/data/cases-aus.csv' %>%
                        cum_cases = col_integer())) %>%
   mutate(day = (date - min(date)) %>% as.integer()) %>%
   mutate(country = 'AU')
-
-
 
 cases_it <- '~/covid-19-plots/data/cases-itl.csv' %>%
   read_csv(col_names = c('date', 'cum_cases'),
@@ -25,6 +27,10 @@ cases_it <- '~/covid-19-plots/data/cases-itl.csv' %>%
 
 
 
+
+###############
+# Plots
+###############
 
 cases_au %>%
   ggplot(aes(x = date, y = cum_cases)) +
@@ -42,13 +48,14 @@ cases_au %>%
   scale_y_log10() +
   theme_fivethirtyeight()
 
-
+dmy('13/3/2020') - ymd('2020-02-23')
 
 cases <- cases_au %>%
-  mutate(day = day - 25) %>%
+  mutate(day = day - 19) %>%
   bind_rows(cases_it)
 
 cases %>%
+  filter(day > 0) %>%
   ggplot(aes(x = day, y = cum_cases, colour = country)) +
   geom_point() +
   geom_line() +
@@ -82,7 +89,7 @@ cases_au_fit %>%
   ggplot(aes(x = x, y = y)) +
   geom_point() +
   geom_smooth(method = 'lm', formula = y ~ x) +
-  geom_text(x = 3.65, y = 5, label = lm_eqn(cases_au_fit), parse = TRUE)
+  geom_text(x = 3.7, y = 5, label = lm_eqn(cases_au_fit), parse = TRUE)
 
 
 
