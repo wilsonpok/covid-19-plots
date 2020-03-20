@@ -25,9 +25,6 @@ cases_it <- '~/covid-19-plots/data/cases-itl.csv' %>%
   mutate(country = 'IT')
 
 
-
-
-
 ###############
 # Plots
 ###############
@@ -66,7 +63,7 @@ cases_au %<>%
   mutate(day = day + 1) %>%
   mutate(log_cases = log(cum_cases))
 
-cases_au %>% ggplot(aes(x = day, y = log_cases)) + geom_point()
+cases_au %>% ggplot(aes(x = day, y = log_cases)) + geom_point() + geom_line()
 
 cases_au_fit <- cases_au %>% filter(day > 40)
 
@@ -74,16 +71,14 @@ cases_au_fit <- cases_au %>% filter(day > 40)
 
 cases_au_fit %>%
   ggplot(aes(x = day, y = log_cases)) +
-  geom_point() +
-  geom_smooth(method = 'lm', formula = y ~ x)
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  geom_point()
 
 
 
 fit <- lm(log_cases ~ day, data = cases_au_fit)
 
-date_range <- seq(from = min(cases_au_fit$date),
-                  to = ymd('2020-04-01'),
-                  by = 1)
+date_range <- seq(from = min(cases_au_fit$date), to = ymd('2020-04-01'), by = 1)
 
 day_range <- seq(from = min(cases_au_fit$day),
                 length.out = length(date_range))
@@ -93,8 +88,19 @@ cases_au_extrap <- tibble(date = date_range,
                           log_pred = coef(fit)[1] + coef(fit)[2] * day,
                           pred = exp(log_pred))
 
+
 cases_au_fit %>%
   mutate(pred_cum_cases = coef(fit)[1] + coef(fit)[2] * day) %>%
   ggplot(aes(x = date, y = exp(log_cases))) +
+  geom_line(data = cases_au_extrap, aes(x = date, y = pred), colour = 'blue') +
   geom_point() +
-  geom_line(data = cases_au_extrap, aes(x = date, y = pred), colour = 'blue')
+  theme_fivethirtyeight()
+
+
+cases_au_fit %>%
+  mutate(pred_cum_cases = coef(fit)[1] + coef(fit)[2] * day) %>%
+  ggplot(aes(x = date, y = exp(log_cases))) +
+  geom_line(data = cases_au_extrap, aes(x = date, y = pred), colour = 'blue') +
+  geom_point() +
+  scale_y_log10() +
+  theme_fivethirtyeight()
