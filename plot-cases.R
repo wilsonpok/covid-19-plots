@@ -38,15 +38,14 @@ cases_au %>%
   geom_line() +
   theme_fivethirtyeight()
 
-
 cases_au %>%
-  filter(day >= 30 ) %>%
+  filter(day >= 35) %>%
   ggplot(aes(x = day, y = cum_cases)) +
   geom_point() +
   geom_line() +
-  scale_x_log10() +
   scale_y_log10() +
   theme_fivethirtyeight()
+
 
 dmy('13/3/2020') - ymd('2020-02-23')
 
@@ -63,37 +62,24 @@ cases %>%
   scale_colour_fivethirtyeight() +
   theme_fivethirtyeight()
 
-
-
-
-
-cases_au_fit <- cases_au %>%
+cases_au %<>%
   mutate(day = day + 1) %>%
-  mutate(x = log(day)) %>%
-  mutate(y = log(cum_cases))
+  mutate(log_cases = log(cum_cases))
 
-cases_au_fit %>% ggplot(aes(x = x, y = y)) + geom_point()
+cases_au %>% ggplot(aes(x = day, y = log_cases)) + geom_point()
 
-cases_au_fit %<>% filter(x > 3.6)
+cases_au_fit <- cases_au %>% filter(day > 40)
 
-lm_eqn <- function(df){
-  m <- lm(y ~ x, df);
-  eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,
-                   list(a = format(unname(coef(m)[1]), digits = 2),
-                        b = format(unname(coef(m)[2]), digits = 2),
-                        r2 = format(summary(m)$r.squared, digits = 3)))
-  as.character(as.expression(eq));
-}
+
 
 cases_au_fit %>%
-  ggplot(aes(x = x, y = y)) +
+  ggplot(aes(x = day, y = log_cases)) +
   geom_point() +
-  geom_smooth(method = 'lm', formula = y ~ x) +
-  geom_text(x = 3.7, y = 5, label = lm_eqn(cases_au_fit), parse = TRUE)
+  geom_smooth(method = 'lm', formula = y ~ x)
 
 
 
-fit <- lm(y ~ x, data = cases_au_fit)
+fit <- lm(log_cases ~ day, data = cases_au_fit)
 
 date_range <- seq(from = min(cases_au_fit$date),
                   to = ymd('2020-04-01'),
@@ -104,12 +90,11 @@ day_range <- seq(from = min(cases_au_fit$day),
 
 cases_au_extrap <- tibble(date = date_range,
                           day = day_range,
-                          x = log(day),
-                          pred_cum_cases = exp(coef(fit)[1])*exp(coef(fit)[2]*x))
+                          log_pred = coef(fit)[1] + coef(fit)[2] * day,
+                          pred = exp(log_pred))
 
 cases_au_fit %>%
-  ggplot(aes(x = date, y = cum_cases)) +
+  mutate(pred_cum_cases = coef(fit)[1] + coef(fit)[2] * day) %>%
+  ggplot(aes(x = date, y = exp(log_cases))) +
   geom_point() +
-  geom_line(data = cases_au_extrap,
-            aes(x = date, y = pred_cum_cases), colour = 'blue') +
-  theme_fivethirtyeight()
+  geom_line(data = cases_au_extrap, aes(x = date, y = pred), colour = 'blue')
