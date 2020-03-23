@@ -14,7 +14,8 @@ cases_au <- '~/covid-19-plots/data/cases-aus.csv' %>%
                        date = col_date(format = '%d/%m/%Y'),
                        cum_cases = col_integer())) %>%
   mutate(day = (date - min(date)) %>% as.integer()) %>%
-  mutate(country = 'AU')
+  mutate(country = 'AU') %>%
+  mutate(diff_cases = cum_cases - lag(cum_cases))
 
 cases_it <- '~/covid-19-plots/data/cases-itl.csv' %>%
   read_csv(col_names = c('date', 'cum_cases'),
@@ -43,15 +44,20 @@ cases_au %>%
   scale_y_log10() +
   theme_fivethirtyeight()
 
+cases_au %>%
+  filter(!is.na(diff_cases)) %>%
+  ggplot(aes(x = date, y = diff_cases)) +
+  geom_col() +
+  theme_fivethirtyeight()
 
-dmy('13/3/2020') - ymd('2020-02-23')
 
 cases <- cases_au %>%
-  mutate(day = day - 19) %>%
-  bind_rows(cases_it)
+  mutate(day = day - 32) %>%
+  bind_rows(cases_it %>% mutate(day = day - 4))
+
 
 cases %>%
-  filter(day > 0) %>%
+  filter(cum_cases >= 100) %>%
   ggplot(aes(x = day, y = cum_cases, colour = country)) +
   geom_point() +
   geom_line() +
@@ -72,7 +78,8 @@ cases_au_fit <- cases_au %>% filter(day > 40)
 cases_au_fit %>%
   ggplot(aes(x = day, y = log_cases)) +
   geom_smooth(method = 'lm', formula = y ~ x) +
-  geom_point()
+  geom_point() +
+  theme_fivethirtyeight()
 
 
 
