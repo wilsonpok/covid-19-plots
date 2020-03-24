@@ -30,25 +30,35 @@ cases_it <- '~/covid-19-plots/data/cases-itl.csv' %>%
 # Plots
 ###############
 
-cases_au %>%
-  ggplot(aes(x = date, y = cum_cases)) +
-  geom_point() +
-  geom_line() +
+cases_au_pivot <- cases_au %>%
+  filter(date > ymd('2020-03-01')) %>%
+  select(date, cum_cases, diff_cases) %>%
+  mutate(log_cum_cases = log(cum_cases)) %>%
+  pivot_longer(-date) %>%
+  mutate(name = factor(name,
+                       levels = c('cum_cases', 'log_cum_cases', 'diff_cases')))
+
+cases_au_pivot %>%
+  filter(name != 'log_cum_cases') %>%
+  ggplot(aes(x = date, y = value)) +
+  facet_wrap(~name, ncol = 1, scales = 'free_y') +
+  geom_point(data = subset(cases_au_pivot, name == 'cum_cases')) +
+  geom_line(data = subset(cases_au_pivot, name == 'cum_cases')) +
+  geom_col(data = subset(cases_au_pivot, name == 'diff_cases')) +
   theme_fivethirtyeight()
 
-cases_au %>%
-  filter(day >= 35) %>%
-  ggplot(aes(x = day, y = cum_cases)) +
-  geom_point() +
-  geom_line() +
-  scale_y_log10() +
+cases_au_pivot %>%
+  filter(name != 'cum_cases') %>%
+  ggplot(aes(x = date, y = value)) +
+  facet_wrap(~name, ncol = 1, scales = 'free_y') +
+  geom_point(data = subset(cases_au_pivot, name == 'log_cum_cases')) +
+  geom_line(data = subset(cases_au_pivot, name == 'log_cum_cases')) +
+  geom_col(data = subset(cases_au_pivot, name == 'diff_cases')) +
   theme_fivethirtyeight()
 
-cases_au %>%
-  filter(!is.na(diff_cases)) %>%
-  ggplot(aes(x = date, y = diff_cases)) +
-  geom_col() +
-  theme_fivethirtyeight()
+
+
+
 
 
 cases <- cases_au %>%
