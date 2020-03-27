@@ -38,6 +38,7 @@ cases_au_pivot <- cases_au %>%
   mutate(name = factor(name,
                        levels = c('cum_cases', 'log_cum_cases', 'diff_cases')))
 
+
 cases_au_pivot %>%
   filter(name != 'log_cum_cases') %>%
   ggplot(aes(x = date, y = value)) +
@@ -46,6 +47,7 @@ cases_au_pivot %>%
   geom_line(data = subset(cases_au_pivot, name == 'cum_cases')) +
   geom_col(data = subset(cases_au_pivot, name == 'diff_cases')) +
   theme_fivethirtyeight()
+
 
 cases_au_pivot %>%
   filter(name != 'cum_cases') %>%
@@ -79,7 +81,11 @@ cases_au %<>%
   mutate(day = day + 1) %>%
   mutate(log_cases = log(cum_cases))
 
-cases_au %>% ggplot(aes(x = day, y = log_cases)) + geom_point() + geom_line()
+cases_au %>%
+  ggplot(aes(x = day, y = log_cases)) +
+  geom_point() +
+  geom_line() +
+  theme_fivethirtyeight()
 
 cases_au_fit <- cases_au %>% filter(day > 40)
 
